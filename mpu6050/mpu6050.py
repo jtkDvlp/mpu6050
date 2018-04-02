@@ -40,6 +40,10 @@ class mpu6050:
     PWR_MGMT_1 = 0x6B
     PWR_MGMT_2 = 0x6C
 
+    INT_ENABLE = 0x38
+    INT_PIN_CFG = 0x37
+    INT_STATUS = 0x3A
+
     ACCEL_XOUT0 = 0x3B
     ACCEL_YOUT0 = 0x3D
     ACCEL_ZOUT0 = 0x3F
@@ -58,6 +62,8 @@ class mpu6050:
         self.bus = smbus.SMBus(bus)
         # Wake up the MPU-6050 since it starts in sleep mode
         self.bus.write_byte_data(self.address, self.PWR_MGMT_1, 0x00)
+        self.bus.write_byte_data(self.address, self.INT_PIN_CFG, 0b00100000)
+        self.bus.write_byte_data(self.address, self.INT_ENABLE, 0b00000001)
 
     # I2C communication methods
 
@@ -86,6 +92,8 @@ class mpu6050:
         Returns the temperature in degrees Celcius.
         """
         raw_temp = self.read_i2c_word(self.TEMP_OUT0)
+
+        self.bus.read_byte_data(self.address, self.INT_STATUS)
 
         # Get the actual temperature using the formule given in the
         # MPU-6050 Register Map and Descriptions revision 4.2, page 30
@@ -139,6 +147,8 @@ class mpu6050:
         x = self.read_i2c_word(self.ACCEL_XOUT0)
         y = self.read_i2c_word(self.ACCEL_YOUT0)
         z = self.read_i2c_word(self.ACCEL_ZOUT0)
+
+        self.bus.read_byte_data(self.address, self.INT_STATUS)
 
         accel_scale_modifier = None
         accel_range = self.read_accel_range(True)
@@ -211,6 +221,8 @@ class mpu6050:
         x = self.read_i2c_word(self.GYRO_XOUT0)
         y = self.read_i2c_word(self.GYRO_YOUT0)
         z = self.read_i2c_word(self.GYRO_ZOUT0)
+
+        self.bus.read_byte_data(self.address, self.INT_STATUS)
 
         gyro_scale_modifier = None
         gyro_range = self.read_gyro_range(True)
