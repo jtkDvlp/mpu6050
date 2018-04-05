@@ -5,6 +5,7 @@ Released under the MIT License
 Copyright (c) 2015, 2016, 2017 MrTijn/Tijndagamer
 """
 
+import math
 import smbus
 
 class mpu6050:
@@ -252,6 +253,19 @@ class mpu6050:
         gyro = self.get_gyro_data()
 
         return [accel, gyro, temp]
+
+    def compute_distance(self, a, b):
+        return math.sqrt((a*a)+(b+b))
+
+    def get_y_rotation(self):
+        data = self.get_accel_data()
+        radians = math.atan2(data['x'], self.compute_distance(data['y'], data['z']))
+        return -math.degrees(radians)
+
+    def get_x_rotation(self):
+        data = self.get_accel_data()
+        radians = math.atan2(data['y'], self.compute_distance(data['x'], data['z']))
+        return math.degrees(radians)
 
 if __name__ == "__main__":
     mpu = mpu6050(0x68)
